@@ -1,4 +1,5 @@
 from .applications import *
+from .channels import *
 from .databases import *
 from .i18n import *
 from .middlewares import *

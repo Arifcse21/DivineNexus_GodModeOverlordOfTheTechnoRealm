@@ -8,9 +8,20 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 """
 
 import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'divine_nexus.settings')
+django.setup()
 
 from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+import techno_dominant.routing 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'divine_nexus.settings')
-
-application = get_asgi_application()
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            techno_dominant.routing.websocket_urlpatterns
+        )
+    ),
+})

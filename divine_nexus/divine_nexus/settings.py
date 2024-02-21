@@ -30,7 +30,9 @@ ALLOWED_HOSTS = ["*"]
 
 ROOT_URLCONF = 'divine_nexus.urls'
 
-WSGI_APPLICATION = 'divine_nexus.wsgi.application'
+ASGI_APPLICATION = 'divine_nexus.asgi.application'
+
+# WSGI_APPLICATION = 'divine_nexus.wsgi.application'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
