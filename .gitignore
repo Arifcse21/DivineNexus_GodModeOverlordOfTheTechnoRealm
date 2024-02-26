@@ -6,9 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
-techno_dominant/migrations/*
+divine_nexus/techno_dominant/migrations/*
 !__init__.py
 
+.idea/
 
 # Distribution / packaging
 .Python
