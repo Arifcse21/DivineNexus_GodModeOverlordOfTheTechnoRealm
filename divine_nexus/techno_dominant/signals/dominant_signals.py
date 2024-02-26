@@ -10,7 +10,7 @@ from channels.layers import get_channel_layer
 @receiver(post_save, sender=DominantCliModel)
 def broadcast_new_message(sender, instance, created, **kwargs):  # Define the function as async
     if created:
-
+        print(instance)
         ser_data = DominantCliModelSerializer(instance).data
         print(ser_data, "here")
 

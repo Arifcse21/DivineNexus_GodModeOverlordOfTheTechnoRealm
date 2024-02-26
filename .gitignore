@@ -9,7 +9,12 @@ __pycache__/
 divine_nexus/techno_dominant/migrations/*
 !__init__.py
 
+
+
 .idea/
+
+divine_nexus/geoip/*
+!__init__.py
 
 # Distribution / packaging
 .Python
