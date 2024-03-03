@@ -39,4 +39,4 @@ ASGI_APPLICATION = 'divine_nexus.asgi.application'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
+# GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')

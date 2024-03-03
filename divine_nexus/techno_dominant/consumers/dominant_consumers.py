@@ -1,6 +1,8 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from techno_dominant.models import DominantCliModel
 from asgiref.sync import sync_to_async
+# from techno_dominant.utils.local_timezone_convert_util import get_local_tz_ws
+
 
 class DominantConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -70,11 +72,15 @@ class DominantConsumer(AsyncJsonWebsocketConsumer):
     
     @sync_to_async
     def get_messages(self, cli=None):
+        # import pdb; pdb.set_trace()
         cli_id = cli.id if cli else 0
         result = DominantCliModel.objects.filter(id=cli_id)
         if result.exists():
             result = result.values().first()
-            # print(result)
+            print("result: ", result)
+            # print(result["executed_at"])
+            # result["executed_at"] = get_local_tz_ws(str(result["executed_at"]), self.scope["client"][0])
+            # print(result["executed_at"])
             for key, value in result.items():
                 result[key] = str(value)
             return result

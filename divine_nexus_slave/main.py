@@ -3,11 +3,13 @@ import usocket as socket
 import ujson
 import ubinascii
 import os
+import time
+import json
 
 
 # Define your Wi-Fi credentials
-wifi_ssid = "OpenWifi"
-wifi_password = "#IndiaOut,Fuck USA!!"
+wifi_ssid = "SaveBD"
+wifi_password = "IndiaOUT"
 
 # Function to connect to Wi-Fi
 def connect_wifi():
@@ -19,7 +21,7 @@ def connect_wifi():
     print("Connected to Wi-Fi")
 
 # Define WebSocket server details
-websocket_server = "192.168.0.4"  # Assuming the WebSocket server is running locally
+websocket_server = "192.168.68.107"  # Assuming the WebSocket server is running locally
 websocket_port = 8000
 websocket_path = "/ws/command/"
 
@@ -63,26 +65,46 @@ def connect_websocket():
     else:
         print("Failed to establish WebSocket connection")
         return None
+    
+def process_message(message):
+    # Check if the message starts with the text frame indicator (0x81)
+    if message.startswith(b'\x81'):
+        # Decode the message and process it as a JSON payload
+        try:
+            decoded_message = message[4:].decode()
+            parsed_message = json.loads(decoded_message)
+            # Process the JSON message
+            print("Received JSON message:", parsed_message)
+            return parsed_message
+        except json.JSONDecodeError:
+            print("Received non-JSON message:", message)
+            return {}
+    else:
+        print("Received non-text message:", message)
+        return {}
+
+
 
 # Main function to handle WebSocket communication
 def main():
     connect_wifi()
     while True:
         websocket = connect_websocket()
-        if websocket:
-            # Send a message (optional)
-            message = {"message": "Hello from ESP32!"}
-            websocket.send(ujson.dumps(message))
-
-            # Main loop
-            while True:
-                try:
-                    data = websocket.recv(1024)
-                    if data:
-                        print("Received message:", data)
-                except OSError as e:
-                    print("WebSocket connection error:", e)
-                    break
+        counter = 0
+        while True:
+            counter += 1
+            try:
+                data = websocket.recv(1024)
+                if data:
+                    
+                    command_value = process_message(data)
+                    print(f"command: {command_value}")
+            except OSError as e:
+                print(f"WebSocket connection error {counter}:", e)
+                break  # Exit the inner loop to attempt reconnection
+        # Attempt reconnection after encountering an error
+        time.sleep(1)  # Add a delay before attempting reconnection
 
 # Run the main function
 main()
+

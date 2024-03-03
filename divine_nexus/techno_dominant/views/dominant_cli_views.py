@@ -3,7 +3,7 @@ from rest_framework import status, generics, viewsets
 from rest_framework.response import Response
 from techno_dominant.models import *
 from techno_dominant.serializers import *
-from techno_dominant.utils.local_timezone_convert_util import get_local_tz
+# from techno_dominant.utils.local_timezone_convert_util import get_local_tz
 
 
 class DominantCliView(generics.ListCreateAPIView):
@@ -15,8 +15,8 @@ class DominantCliView(generics.ListCreateAPIView):
         try:
             query = self.get_queryset()
             ser_data = self.get_serializer(query, many=True).data
-            for sd in ser_data:
-                sd["executed_at"] = get_local_tz(sd["executed_at"], request)
+            # for sd in ser_data:
+            #     sd["executed_at"] = get_local_tz(sd["executed_at"], request)
             
             return Response(ser_data, status=status.HTTP_200_OK)
         
@@ -35,7 +35,7 @@ class DominantCliView(generics.ListCreateAPIView):
             serializer.save()
             ser_data = serializer.data
 
-            ser_data["executed_at"] = get_local_tz(ser_data["executed_at"], request)
+            # ser_data["executed_at"] = get_local_tz(ser_data["executed_at"], request)
 
             return Response(ser_data, status=status.HTTP_201_CREATED)
 
