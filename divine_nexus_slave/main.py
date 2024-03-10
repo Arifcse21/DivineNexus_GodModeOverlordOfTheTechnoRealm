@@ -4,12 +4,12 @@ import ujson
 import ubinascii
 import os
 import time
-import json
+from cli_director import cli_director
 
 
 # Define your Wi-Fi credentials
-wifi_ssid = "SaveBD"
-wifi_password = "IndiaOUT"
+wifi_ssid = "IndiaOut"
+wifi_password = "FuckUSA"
 
 # Function to connect to Wi-Fi
 def connect_wifi():
@@ -72,15 +72,15 @@ def process_message(message):
         # Decode the message and process it as a JSON payload
         try:
             decoded_message = message[4:].decode()
-            parsed_message = json.loads(decoded_message)
+            parsed_message = ujson.loads(decoded_message)
             # Process the JSON message
-            print("Received JSON message:", parsed_message)
+            # print("Received JSON message:", parsed_message)
             return parsed_message
-        except json.JSONDecodeError:
-            print("Received non-JSON message:", message)
+        except:
+            # print("Received non-JSON message:", message)
             return {}
     else:
-        print("Received non-text message:", message)
+        # print("Received non-text message:", message)
         return {}
 
 
@@ -94,11 +94,28 @@ def main():
         while True:
             counter += 1
             try:
-                data = websocket.recv(1024)
+                data = websocket.recv(4096)
                 if data:
-                    
-                    command_value = process_message(data)
-                    print(f"command: {command_value}")
+                    command_value = None
+                    processed_data = process_message(data)
+                    if processed_data:
+                        command_value = processed_data["data"]["command"]
+                        stat, msg = cli_director(command_value)
+                        if stat:
+                            resp_data = {
+                                "type": "execution",
+                                "data": msg
+                            }
+                            resp_data_json = ujson.dumps(resp_data)	#.encode("utf-8")
+                            
+                            try:
+                                print(type(resp_data_json))
+                                websocket.send(resp_data_json)
+                                print("JSON data sent successfully:", resp_data_json)
+                            except Exception as e:
+                                print("here error", type(e).__name__)
+                                
+                    print(f"{command_value if command_value else ''}")
             except OSError as e:
                 print(f"WebSocket connection error {counter}:", e)
                 break  # Exit the inner loop to attempt reconnection

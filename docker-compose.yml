@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    restart: on-failure
+    build:
+      context: .
+    ports:
+      - "1883:1883"
+      - "5672:5672"
+      - "15672:15672"
+      - "1885:15675"
+    env_file:
+      - .env
+    # environment:
+    #   - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+    #   - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+
+    command: sh -c "printenv && \ 
+                    rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_amqp1_0 && \
+                    rabbitmq-server"
+    
+    
+
+

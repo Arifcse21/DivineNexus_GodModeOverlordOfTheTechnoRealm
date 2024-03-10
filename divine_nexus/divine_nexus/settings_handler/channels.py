@@ -2,7 +2,7 @@
 import os
 
 rabbitmq_user = os.environ.get("RABBITMQ_DEFAULT_USER")
-rabbitmq_pass = os.environ.get("RABBITMQ_DEFAULT_PASSWORD")
+rabbitmq_pass = os.environ.get("RABBITMQ_DEFAULT_PASS")
 rabbitmq_host = os.environ.get("RABBITMQ_HOST")
 rabbitmq_port = os.environ.get("RABBITMQ_PORT")
 

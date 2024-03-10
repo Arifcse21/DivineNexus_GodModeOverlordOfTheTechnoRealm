@@ -1,7 +1,7 @@
 command_tuples = (
-    ('command1', 'command1'),
-    ('command2', 'command2'),
-    ('command3', 'command3'),
+    ('led_on', 'led_on'),
+    ('led_off', 'led_off'),
+    ('board_temperature', 'board_temperature'),
     ('command4', 'command4'),
     ('command5', 'command5'),
     ('command6', 'command6'),
