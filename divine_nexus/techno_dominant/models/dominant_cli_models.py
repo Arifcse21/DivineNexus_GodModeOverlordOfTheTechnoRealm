@@ -1,9 +1,10 @@
 from typing import Iterable
 from django.db import models
-from divine_nexus.const import command_tuples
+from divine_nexus.const import command_tuples, mqtt_topics_dict
 
 class DominantCliModel(models.Model):
     command = models.CharField(max_length=255, choices=command_tuples)
+    mqtt_topic = models.CharField(max_length=255, null=True, blank=True, editable=False)
     exec_response = models.TextField(null=True, blank=True, editable=False)
     executed_at = models.DateTimeField(auto_now_add=True)
 
@@ -19,4 +20,8 @@ class DominantCliModel(models.Model):
         # print(self.command)
         if self.command not in list(set(command[0] for command in command_tuples)):
             raise Exception(f"Invalid command: {self.command}")
+        
+        else:
+            self.mqtt_topic = mqtt_topics_dict[self.command]
+
         return super().save(*args, **kwargs)

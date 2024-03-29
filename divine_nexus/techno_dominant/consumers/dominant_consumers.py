@@ -7,32 +7,7 @@ import paho.mqtt.client as mqtt
 
 
 class DominantConsumer(AsyncWebsocketConsumer):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        self.mqtt_client.username_pw_set(username=os.environ.get("RABBITMQ_DEFAULT_USER"), password=os.environ.get("RABBITMQ_DEFAULT_PASS"))
-
-        self.mqtt_client.on_connect = self.on_mqtt_connect
-        self.mqtt_client.on_message = self.on_mqtt_message
-        self.mqtt_client.connect(os.environ.get("RABBITMQ_HOST"), 1883, 60)
-        self.mqtt_client.loop_start()
-
-    def on_mqtt_connect(self, client, userdata, flags, reason_code, properties):
-        print("Connected to RabbitMQ with result code " + str(properties))
-        self.mqtt_client.subscribe("project_dominant")
-
-    async def on_mqtt_message(self, client, userdata, msg):
-        print("MQTT Message Received: " + msg.payload.decode())
-        await self.send_to_websocket(msg.payload.decode())
-
-    async def send_to_websocket(self, message):
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'type': 'command',
-            'message': message
-        }))
-
+    
     async def connect(self):
         self.room_group_name = 'project_dominant'
 
