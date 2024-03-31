@@ -1,9 +1,8 @@
-from command_lines_proc import (
-    led, board_temperature
-)
+from led_cli import led
+from board_temp_cli import board_temperature
 
 
-def cli_director(cli):
+def cli_master(cli):
     if cli == "led_on":
         led.on()
         return True, "LED Turned On"
@@ -14,3 +13,8 @@ def cli_director(cli):
         temp = board_temperature()
         return True, temp
     
+    
+    else:
+        return False, "Invalid Cli"
+    
+
