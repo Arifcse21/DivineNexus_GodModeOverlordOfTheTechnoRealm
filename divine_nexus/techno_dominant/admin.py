@@ -5,4 +5,4 @@ from techno_dominant.models import *
 
 @admin.register(DominantCliModel)
 class DominantCliModelAdmin(admin.ModelAdmin):
-    list_display = ("id", "command", "exec_response", "executed_at")
+    list_display = ("id", "command", "pub_topic", "exec_response", "sub_topic", "executed_at")

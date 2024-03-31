@@ -18,7 +18,7 @@ class MQTTPublisher:
         self.password = os.environ.get("RABBITMQ_DEFAULT_PASS")
         
         # generate client ID with pub prefix randomly
-        self.client_id = f'python-mqtt-{random.randint(0, 1000)}'
+        self.client_id = f'rpi-mqtt-{random.randint(0, 1000)}'
         self.client = mqtt_client.Client(
             callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2,
             client_id=self.client_id,

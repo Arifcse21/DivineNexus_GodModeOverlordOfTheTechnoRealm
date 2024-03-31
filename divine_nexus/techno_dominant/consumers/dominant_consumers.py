@@ -40,8 +40,6 @@ class DominantConsumer(AsyncWebsocketConsumer):
             else:
                 await self.broadcast_message()
 
-        elif event_type == 'execution':
-            await self.execution_response(content)
 
     async def command(self, event):
 
@@ -51,30 +49,31 @@ class DominantConsumer(AsyncWebsocketConsumer):
             "data": event["data"],
         }))
     
-    async def execution(self, event):
-
+    async def pub_topic(self, event):
+        print(self)
         # Send command to WebSocket
         await self.send(text_data=json.dumps({
             "type": event["type"],
             "data": event["data"],
         }))
+
     
     async def broadcast_message(self, save_stat=None):
         # print(f"save_stat: {save_stat}")
         if save_stat:
-            messages = await self.get_messages(cli=save_stat)
-            # print(type(messages))
+            pub_topic = await self.get_pub_topic(cli=save_stat)
+            # print(type(pub_topic))
 
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': 'command',
-                    'data': messages, 
+                    'type': 'pub_topic',
+                    'data': pub_topic, 
                 }
             )
         else:
             # print("save_stat is None")
-            messages = await self.get_messages()
+            messages = await self.get_pub_topic()
             # print(messages)
 
             await self.channel_layer.group_send(
@@ -85,31 +84,15 @@ class DominantConsumer(AsyncWebsocketConsumer):
                     
                 }
             )
-    
-    async def execution_response(self, event):
-        print(f"execution_response: {event}")
-        # await self.channel_layer.group_send(
-        #     self.room_group_name,
-        #     {
-        #         'type': 'execution',
-        #         'data': event["data"],
-        #     }
-        # )
 
     @sync_to_async
-    def get_messages(self, cli=None):
+    def get_pub_topic(self, cli=None):
         # import pdb; pdb.set_trace()
         cli_id = cli.id if cli else 0
         result = DominantCliModel.objects.filter(id=cli_id)
         if result.exists():
-            result = result.values().first()
-            # print("result: ", result)
-            # print(result["executed_at"])
-            # result["executed_at"] = get_local_tz_ws(str(result["executed_at"]), self.scope["client"][0])
-            # print(result["executed_at"])
-            for key, value in result.items():
-                result[key] = str(value)
-            return result
+            result = result.first()
+            return str(result.pub_topic)
         else:
             return None
         
@@ -122,3 +105,12 @@ class DominantConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(e)
             return False
+        
+    async def broadcast_from_api(self, data):
+       await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'pub_topic',
+                    'data': data, 
+                }
+            )

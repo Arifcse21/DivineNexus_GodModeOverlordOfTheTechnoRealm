@@ -1,1 +1,1 @@
-from .dominant_cli_serializers import DominantCliModelSerializer
+from .dominant_cli_serializers import *
