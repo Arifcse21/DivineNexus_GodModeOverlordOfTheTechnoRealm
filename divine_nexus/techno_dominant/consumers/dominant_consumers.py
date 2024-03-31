@@ -1,8 +1,9 @@
 from datetime import datetime
 import os
 from channels.generic.websocket import AsyncWebsocketConsumer
-from techno_dominant.utils.local_timezone_convert_util import get_local_tz
-from techno_dominant.models import DominantCliModel
+from techno_dominant.serializers.dominant_cli_serializers import DominantCliModelSerializer
+from techno_dominant.utils.local_timezone_convert_util import get_local_tz, get_tz_gmt_offset
+from techno_dominant.models import *
 from asgiref.sync import sync_to_async
 import json
 from django.http import HttpRequest
@@ -93,24 +94,44 @@ class DominantConsumer(AsyncWebsocketConsumer):
     def get_exec_response(self, cli=None):
         # import pdb; pdb.set_trace()
         cli_id = cli.id if cli else 0
-        sleep(2)
         result = DominantCliModel.objects.filter(id=cli_id)
         if result.exists():
-            result = list(result.values())[0]
+            result = result.first()
             dummy_request = HttpRequest()
-            result["scheduled_time"] = get_local_tz(result["scheduled_time"], dummy_request) if result["is_scheduled"] else None
-            result["executed_at"] = get_local_tz(result["executed_at"], dummy_request)
-
-
-            return result
+            ser_data = DominantCliModelSerializer(result, context={"request": dummy_request}).data
+            print(f"ser data: {ser_data}")
+            return ser_data
         else:
             return None
         
     @sync_to_async
     def save_message(self, data):
-        command = data.get('command')
+        command = data.get("command")
+        is_scheduled = True if data.get("is_scheduled") == "true" else False
+        scheduled_time = data.get("scheduled_time") if is_scheduled else None
+        repeat_on = data.get("repeat_on", [])
+
+        if is_scheduled:
+            # print(f"repeat_on: {repeat_on}")
+            dummy_request = HttpRequest()
+            gmt_offset = get_tz_gmt_offset(scheduled_time, dummy_request)
+            scheduled_time = str(datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M')) + gmt_offset
+            # print(f"scheduled_time: {scheduled_time}")
         try:
-            cli = DominantCliModel.objects.create(command=command)
+            cli = DominantCliModel.objects.create(
+                command=command,
+                is_scheduled=is_scheduled,
+                scheduled_time=scheduled_time,
+            )
+
+            if repeat_on:
+                print(f"repeat_on: {repeat_on}")
+                ro_q = WeekdayModel.objects.filter(name__in=repeat_on)
+                if ro_q.exists():
+                    for r_o in ro_q:
+                        cli.repeat_on.add(r_o.pk)
+
+                # cli.save()
             return cli
         except Exception as e:
             print(e)
