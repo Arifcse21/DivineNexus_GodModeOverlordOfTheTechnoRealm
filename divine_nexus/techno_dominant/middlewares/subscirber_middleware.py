@@ -37,13 +37,13 @@ class MQTTSubscriberMiddleware:
         response = self.get_response(request)
         try:
             data = response.data
-            print(f"full_data: {data}")
+            # print(f"full_data: {data}")
             
             if not isinstance(data, list):
-                print(f"response.data>>>>> {data}")
+                # print(f"response.data>>>>> {data}")
                 query = DominantCliModel.objects.filter(pk=data["id"])
                 if query.exists():
-                    print(f"query>>>>> {query.values()}")
+                    # print(f"query>>>>> {query.values()}")
                     query = query.first()
 
                     data["pub_topic"] = query.pub_topic
@@ -56,5 +56,5 @@ class MQTTSubscriberMiddleware:
             else:
                 return response
         except Exception as e:
-            print(f"EEEEEEEEEEEEE>>>>> {str(e)}")
+            # print(f"EEEEEEEEEEEEE>>>>> {str(e)}")
             return response
