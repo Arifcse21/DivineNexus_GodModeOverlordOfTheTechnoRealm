@@ -9,6 +9,8 @@ class DominantCliModel(models.Model):
     pub_topic = models.CharField(max_length=255, null=True, blank=True, editable=False)
     exec_response = models.TextField(null=True, blank=True, editable=False)
     sub_topic = models.CharField(max_length=255, null=True, blank=True, editable=False)
+    is_scheduled = models.BooleanField(default=False)
+    scheduled_time = models.DateTimeField(null=True, blank=True)
     executed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -26,8 +28,13 @@ class DominantCliModel(models.Model):
         
         else:
             self.pub_topic = topics_to_pub_dict[self.command]
+        
+        if self.is_scheduled and not self.scheduled_time:
+            raise Exception("Scheduled time is required")       
 
         super().save(*args, **kwargs)
         print(f"self.pk: {self.pk}")
-        MQTTPublisher(self.pub_topic, f"{self.pk}#{self.command}#{self.pub_topic}").publish()
 
+        if not self.is_scheduled:
+            MQTTPublisher(self.pub_topic, f"{self.pk}#{self.command}#{self.pub_topic}").publish()
+            return

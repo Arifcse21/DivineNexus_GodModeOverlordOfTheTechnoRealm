@@ -4,7 +4,7 @@ from rest_framework import status, generics, viewsets
 from rest_framework.response import Response
 from techno_dominant.models import *
 from techno_dominant.serializers import *
-from techno_dominant.utils.local_timezone_convert_util_old import get_local_tz
+from techno_dominant.utils.local_timezone_convert_util import get_local_tz
 from techno_dominant.utils.custom_pagination_util import CustomPagination
 
 class DominantCliView(generics.ListCreateAPIView):
@@ -19,8 +19,8 @@ class DominantCliView(generics.ListCreateAPIView):
             paginated_query = self.paginate_queryset(query)
             ser_data = self.get_serializer(paginated_query, many=True).data
             paginated_data = self.get_paginated_response(ser_data).data
-            # for sd in paginated_data["results"]:
-            #     sd["executed_at"] = get_local_tz(sd["executed_at"], request)
+            for sd in paginated_data["results"]:
+                sd["executed_at"] = get_local_tz(sd["executed_at"], request)
             
             return Response(paginated_data, status=status.HTTP_200_OK)
         

@@ -1,9 +1,12 @@
+from datetime import datetime
 import os
 from channels.generic.websocket import AsyncWebsocketConsumer
+from techno_dominant.utils.local_timezone_convert_util import get_local_tz
 from techno_dominant.models import DominantCliModel
 from asgiref.sync import sync_to_async
 import json
-import paho.mqtt.client as mqtt
+from django.http import HttpRequest
+from time import sleep
 
 
 class DominantConsumer(AsyncWebsocketConsumer):
@@ -35,6 +38,7 @@ class DominantConsumer(AsyncWebsocketConsumer):
         if event_type == 'command':
 
             save_stat = await self.save_message(content)
+
             if save_stat:
                 await self.broadcast_message(save_stat=save_stat)
             else:
@@ -49,7 +53,7 @@ class DominantConsumer(AsyncWebsocketConsumer):
             "data": event["data"],
         }))
     
-    async def pub_topic(self, event):
+    async def exec_response(self, event):
         print(self)
         # Send command to WebSocket
         await self.send(text_data=json.dumps({
@@ -61,19 +65,19 @@ class DominantConsumer(AsyncWebsocketConsumer):
     async def broadcast_message(self, save_stat=None):
         # print(f"save_stat: {save_stat}")
         if save_stat:
-            pub_topic = await self.get_pub_topic(cli=save_stat)
+            response_data = await self.get_exec_response(cli=save_stat)
             # print(type(pub_topic))
 
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': 'pub_topic',
-                    'data': pub_topic, 
+                    'type': 'exec_response',
+                    'data': response_data, 
                 }
             )
         else:
             # print("save_stat is None")
-            messages = await self.get_pub_topic()
+            # messages = await self.get_exec_response()
             # print(messages)
 
             await self.channel_layer.group_send(
@@ -86,13 +90,19 @@ class DominantConsumer(AsyncWebsocketConsumer):
             )
 
     @sync_to_async
-    def get_pub_topic(self, cli=None):
+    def get_exec_response(self, cli=None):
         # import pdb; pdb.set_trace()
         cli_id = cli.id if cli else 0
+        sleep(2)
         result = DominantCliModel.objects.filter(id=cli_id)
         if result.exists():
-            result = result.first()
-            return str(result.pub_topic)
+            result = list(result.values())[0]
+            dummy_request = HttpRequest()
+            result["scheduled_time"] = get_local_tz(result["scheduled_time"], dummy_request) if result["is_scheduled"] else None
+            result["executed_at"] = get_local_tz(result["executed_at"], dummy_request)
+
+
+            return result
         else:
             return None
         
@@ -106,11 +116,3 @@ class DominantConsumer(AsyncWebsocketConsumer):
             print(e)
             return False
         
-    async def broadcast_from_api(self, data):
-       await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'pub_topic',
-                    'data': data, 
-                }
-            )

@@ -23,7 +23,7 @@ class MQTTSubscriberMiddleware:
             self.mqtt_thread = Thread(target=self.run_mqtt_subscriber)
             self.mqtt_thread.daemon = True  # Ensure the thread exits when the main thread exits
             self.mqtt_thread.start()
-            print("Subscriber started successfully")
+            # print("Subscriber started successfully")
         except Exception as e:
             print("Error initializing MQTT subscriber: %s", e)
 
