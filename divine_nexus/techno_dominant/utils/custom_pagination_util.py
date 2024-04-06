@@ -9,7 +9,7 @@ class CustomPagination(PageNumberPagination):
     def get_page_size(self, request):
         if self.page_size_query_param in request.query_params:
             return int(request.query_params[self.page_size_query_param])
-        return self.page_size or 5
+        return self.page_size or 3
     
     def get_paginated_response(self, data):
         start_item = (self.page.number - 1) * self.get_page_size(self.request) + 1
