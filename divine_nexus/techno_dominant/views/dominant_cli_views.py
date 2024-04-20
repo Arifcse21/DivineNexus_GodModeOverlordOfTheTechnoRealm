@@ -30,25 +30,36 @@ class DominantCliView(generics.ListCreateAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
-        try:
+        # try:
 
             command = request.data["command"]
             is_scheduled = True if request.data.get("is_scheduled") == "true" else False
-            cron_syntax = request.data.get("cron_syntax") if is_scheduled else None
-            
+            cron_syntax = request.data.get("cron_syntax")
+            scheduled_datetime = request.data.get("scheduled_datetime")
+
+            if is_scheduled and scheduled_datetime:
+                gmt_offset = get_tz_gmt_offset(scheduled_datetime, request)
+                try:
+                    scheduled_datetime = str(datetime.strptime(scheduled_datetime, '%Y-%m-%dT%H:%M:%S')) + gmt_offset
+                except:
+                    scheduled_datetime = str(datetime.strptime(scheduled_datetime, '%Y-%m-%dT%H:%M')) + gmt_offset
+                # print(f"scheduled_time: {scheduled_datetime}")
+
+
             instance = DominantCliModel.objects.create(
                 command=command,
                 is_scheduled=is_scheduled,
-                cron_syntax=cron_syntax,
+                cron_syntax=cron_syntax if cron_syntax else None,
+                scheduled_datetime=scheduled_datetime if scheduled_datetime else None
             )
 
             ser_data = self.get_serializer(instance).data
             
             return Response(ser_data, status=status.HTTP_201_CREATED)
 
-        except Exception as e:
-            # print(e)
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        # except Exception as e:
+        #     # print(e)
+        #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DominantCliRetView(generics.RetrieveAPIView):

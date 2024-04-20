@@ -64,7 +64,7 @@ class DominantConsumer(AsyncWebsocketConsumer):
 
     
     async def broadcast_message(self, save_stat=None):
-        # print(f"save_stat: {save_stat}")
+        print(f"save_stat: {save_stat}")
         if save_stat:
             response_data = await self.get_exec_response(cli=save_stat)
             # print(type(pub_topic))
@@ -77,9 +77,6 @@ class DominantConsumer(AsyncWebsocketConsumer):
                 }
             )
         else:
-            # print("save_stat is None")
-            # messages = await self.get_exec_response()
-            # print(messages)
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -93,7 +90,7 @@ class DominantConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def get_exec_response(self, cli=None):
         # import pdb; pdb.set_trace()
-        cli_id = cli.id if cli else 0
+        cli_id = cli if cli else 0
         result = DominantCliModel.objects.filter(id=cli_id)
         if result.exists():
             result = result.first()
@@ -108,31 +105,35 @@ class DominantConsumer(AsyncWebsocketConsumer):
     def save_message(self, data):
         command = data.get("command")
         is_scheduled = True if data.get("is_scheduled") == "true" else False
-        scheduled_time = data.get("scheduled_time") if is_scheduled else None
-        repeat_on = data.get("repeat_on", [])
+        cron_syntax = data.get("cron_syntax")
+        scheduled_datetime = data.get("scheduled_datetime")
 
-        if is_scheduled:
-            # print(f"repeat_on: {repeat_on}")
-            dummy_request = HttpRequest()
-            gmt_offset = get_tz_gmt_offset(scheduled_time, dummy_request)
-            scheduled_time = str(datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M')) + gmt_offset
-            # print(f"scheduled_time: {scheduled_time}")
+
         try:
-            cli = DominantCliModel.objects.create(
-                command=command,
-                is_scheduled=is_scheduled,
-                scheduled_time=scheduled_time,
-            )
+            dummy_request = HttpRequest()
+            if is_scheduled and scheduled_datetime:
 
-            if repeat_on:
-                print(f"repeat_on: {repeat_on}")
-                ro_q = WeekdayModel.objects.filter(name__in=repeat_on)
-                if ro_q.exists():
-                    for r_o in ro_q:
-                        cli.repeat_on.add(r_o.pk)
+                
+                gmt_offset = get_tz_gmt_offset(scheduled_datetime, dummy_request)
+                
+                print(f"scheduled_datetime: {scheduled_datetime}")
 
-                # cli.save()
-            return cli
+                scheduled_datetime = str(datetime.strptime(scheduled_datetime, '%Y-%m-%dT%H:%M:%S')) + gmt_offset
+                # print(f"scheduled_datetime: {scheduled_datetime}")
+
+            payload = {
+                "command": command,
+                "is_scheduled": is_scheduled,
+                "cron_syntax": cron_syntax if cron_syntax else None,
+                "scheduled_datetime": scheduled_datetime if scheduled_datetime else None
+            }
+            print(f"payload: {payload}")
+            cli = DominantCliModelSerializer(data=payload, context={"request": dummy_request})
+            cli.is_valid(raise_exception=True)
+            instace = cli.save()
+            ser_data = cli.data
+            
+            return instace.id
         except Exception as e:
             print(e)
             return False

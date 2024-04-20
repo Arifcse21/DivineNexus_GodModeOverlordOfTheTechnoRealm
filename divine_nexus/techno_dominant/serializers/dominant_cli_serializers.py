@@ -10,23 +10,27 @@ class DominantCliModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = DominantCliModel
         fields = [
-            "id", "command", "pub_topic", "exec_response", "sub_topic", 
-            "is_scheduled", "cron_syntax", "cron_syntax_meaning", "executed_at"
+            "id", "command", "pub_topic", "exec_response", "sub_topic", "is_scheduled", 
+            "cron_syntax", "cron_syntax_meaning", "scheduled_datetime", "executed_at"
         ]
         read_only_fields = ["executed_at"]
     
     def get_cron_syntax_meaning(self, obj):
-        if obj.cron_syntax:
+        try:
             return get_description(obj.cron_syntax)
-        else:
+        except:
             return None
 
     def to_representation(self, instance):
-        data = super().to_representation(instance)
-        
-        data["executed_at"] = get_local_tz(data["executed_at"], self.context["request"])
 
-        return data
+        data = super().to_representation(instance)
+        try:
+            data["scheduled_datetime"] = get_local_tz(data["scheduled_datetime"], self.context["request"])
+            data["executed_at"] = get_local_tz(data["executed_at"], self.context["request"]) 
+
+            return data
+        except Exception as e:
+            return data
  
 
 

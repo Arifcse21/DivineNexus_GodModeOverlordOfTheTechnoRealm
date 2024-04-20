@@ -27,6 +27,7 @@ def get_local_tz(datetime_string, request):
         local_tz = pytz.timezone(timezone_name)
         
         formats_to_try = [
+            "%Y-%m-%dT%H:%M",           # Datetime
             "%Y-%m-%dT%H:%M:%S.%f%z",   # Datetime with microseconds and timezone
             "%Y-%m-%dT%H:%M:%S%z",      # Datetime with timezone
             "%Y-%m-%d %H:%M:%S.%f%z",   # Datetime with microseconds and timezone
@@ -73,7 +74,12 @@ def get_tz_gmt_offset(datetime_string, request):
         timezone_offset = user_location['time_zone']
         timezone = pytz.timezone(timezone_offset)
         
-        dt = datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M')
+        try:
+            dt = datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%S')
+        except:
+            # dt = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M')
+            # "2024-04-20 15:57:29+00:00"
+            dt = datetime.strptime(datetime_string[:-6], '%Y-%m-%d %H:%M:%S')
         
         localized_dt = timezone.localize(dt)
         
