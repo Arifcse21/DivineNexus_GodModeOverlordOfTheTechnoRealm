@@ -34,25 +34,13 @@ class DominantCliView(generics.ListCreateAPIView):
 
             command = request.data["command"]
             is_scheduled = True if request.data.get("is_scheduled") == "true" else False
-            scheduled_time = request.data.get("scheduled_time") if is_scheduled else None
-            repeat_on = request.data.getlist("repeat_on", [])
-
-            if is_scheduled:
-                # print(f"repeat_on: {repeat_on}")
-                gmt_offset = get_tz_gmt_offset(scheduled_time, request)
-                scheduled_time = str(datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M')) + gmt_offset
-                # print(f"scheduled_time: {scheduled_time}")
-
+            cron_syntax = request.data.get("cron_syntax") if is_scheduled else None
+            
             instance = DominantCliModel.objects.create(
                 command=command,
                 is_scheduled=is_scheduled,
-                scheduled_time=scheduled_time,
+                cron_syntax=cron_syntax,
             )
-
-            if repeat_on:
-                # print(f"repeat_on: {repeat_on}")
-                for r_o in repeat_on:
-                    instance.repeat_on.add(r_o)
 
             ser_data = self.get_serializer(instance).data
             
