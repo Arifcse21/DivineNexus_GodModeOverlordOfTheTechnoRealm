@@ -14,6 +14,8 @@ EXTERNAL_APPS = [
     'rest_framework',
     'channels',
     'techno_dominant',
+    'celery',
+    'django_celery_results',
 ]
 
 INSTALLED_APPS = PRE_INSTALLED_APPS + EXTERNAL_APPS
