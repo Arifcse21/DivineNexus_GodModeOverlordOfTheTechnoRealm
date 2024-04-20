@@ -15,5 +15,5 @@ celery -A divine_nexus  worker -l INFO -E
 
 ### Celery flower 
 ```
-celery --broker=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_USER@$RABBITMQ_HOST:$RABBITMQ_PORT/ flower
+celery --broker=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_USER@$RABBITMQ_HOST:$RABBITMQ_PORT/ flower --port=$FLOWER_PORT --basic-auth=$FLOWER_USER:$FLOWER_PASS
 ```
