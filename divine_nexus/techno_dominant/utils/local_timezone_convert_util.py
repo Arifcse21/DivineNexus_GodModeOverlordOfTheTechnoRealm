@@ -74,24 +74,42 @@ def get_tz_gmt_offset(datetime_string, request):
         timezone_offset = user_location['time_zone']
         timezone = pytz.timezone(timezone_offset)
         
-        try:
-            dt = datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%S')
-        except:
-            # dt = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M')
-            # "2024-04-20 15:57:29+00:00"
-            dt = datetime.strptime(datetime_string[:-6], '%Y-%m-%d %H:%M:%S')
+        # List of datetime formats to try
+        formats_to_try = [
+            "%Y-%m-%dT%H:%M",           # Datetime without seconds and timezone
+            "%Y-%m-%dT%H:%M:%S.%f%z",   # Datetime with microseconds and timezone
+            "%Y-%m-%dT%H:%M:%S%z",      # Datetime with timezone
+            "%Y-%m-%d %H:%M:%S.%f%z",   # Datetime with microseconds and timezone
+            "%Y-%m-%d %H:%M:%S%z",      # Datetime with timezone
+            "%Y-%m-%d %H:%M:%S.%f",     # Datetime with microseconds
+            "%Y-%m-%d %H:%M:%S",        # Datetime without microseconds
+            "%Y-%m-%d",                 # Date only
+            "%H:%M:%S.%f%z",            # Time with microseconds and timezone
+            "%H:%M:%S%z",               # Time with timezone
+            "%H:%M:%S.%f",              # Time with microseconds
+            "%H:%M:%S"                  # Time without microseconds
+        ]
+
+        # Try parsing datetime string with each format
+        for format_str in formats_to_try:
+            try:
+                dt = datetime.strptime(datetime_string, format_str)
+                localized_dt = timezone.localize(dt)
+                break  # Break the loop if parsing is successful
+            except ValueError:
+                continue  # Try the next format if parsing fails
+
+        else:
+            return None  # Return None if none of the formats work
         
-        localized_dt = timezone.localize(dt)
-        
+        # Calculate GMT offset
         gmt_offset = localized_dt.utcoffset()
-        
         total_seconds = gmt_offset.total_seconds()
         hours = int(total_seconds // 3600)
         minutes = int((total_seconds % 3600) // 60)
         
         # Format the GMT offset as +00:00
         gmt_offset_str = f"{hours:+03d}:{minutes:02d}"
-        # print(f"gmt_offset_str: {gmt_offset_str}")
         return gmt_offset_str
-    
-    
+
+    return None  # Return None if user IP is not available

@@ -1,7 +1,9 @@
 import os
 import random
+from datetime import datetime
 from paho.mqtt import client as mqtt_client
 from techno_dominant.models.dominant_cli_models import DominantCliModel
+
 
 class MQTTSubscriber:
     def __init__(
@@ -39,8 +41,11 @@ class MQTTSubscriber:
         if query.exists():
             query.update(
                 sub_topic=msg.topic,
-                exec_response=exec_resp
+                exec_response=exec_resp,
+                execution_status=1,
+                executed_at=datetime.now(),
             )
+            # print(f"query: {query.values()}")
         else:
             print(f"cli_id: {cli_id} not found")
 

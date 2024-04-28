@@ -4,20 +4,21 @@ from techno_dominant.utils.local_timezone_convert_util import get_local_tz
 from cron_descriptor import get_description
 
 
-class DominantCliModelSerializer(serializers.ModelSerializer):
-    cron_syntax_meaning = serializers.SerializerMethodField("get_cron_syntax_meaning")
+class DominantCliSerializer(serializers.ModelSerializer):
+    cron_expression_meaning = serializers.SerializerMethodField("get_cron_expression_meaning")
     
     class Meta:
         model = DominantCliModel
         fields = [
             "id", "command", "pub_topic", "exec_response", "sub_topic", "is_scheduled", 
-            "cron_syntax", "cron_syntax_meaning", "scheduled_datetime", "executed_at"
+            "cron_expression", "cron_expression_meaning", "scheduled_datetime", 
+            "execution_status", "created_at", "executed_at"
         ]
-        read_only_fields = ["executed_at"]
+        read_only_fields = ["execution_status", "created_at", "executed_at"]
     
-    def get_cron_syntax_meaning(self, obj):
+    def get_cron_expression_meaning(self, obj):
         try:
-            return get_description(obj.cron_syntax)
+            return get_description(obj.cron_expression)
         except:
             return None
 
@@ -25,11 +26,19 @@ class DominantCliModelSerializer(serializers.ModelSerializer):
 
         data = super().to_representation(instance)
         try:
-            data["scheduled_datetime"] = get_local_tz(data["scheduled_datetime"], self.context["request"])
-            data["executed_at"] = get_local_tz(data["executed_at"], self.context["request"]) 
+
+            data["scheduled_datetime"] = get_local_tz(data["scheduled_datetime"], self.context["request"]) \
+                if data["scheduled_datetime"] else None
+            
+            data["created_at"] = get_local_tz(data["created_at"], self.context["request"]) \
+                if data["created_at"] else None
+            
+            data["executed_at"] = get_local_tz(data["executed_at"], self.context["request"]) \
+                if data["executed_at"] else None
 
             return data
         except Exception as e:
+            print(f"Exception: {e}")
             return data
  
 

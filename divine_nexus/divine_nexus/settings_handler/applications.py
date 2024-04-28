@@ -16,6 +16,8 @@ EXTERNAL_APPS = [
     'techno_dominant',
     'celery',
     'django_celery_results',
+    'django_celery_beat',
+    
 ]
 
 INSTALLED_APPS = PRE_INSTALLED_APPS + EXTERNAL_APPS

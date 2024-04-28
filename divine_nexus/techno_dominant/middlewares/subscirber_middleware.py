@@ -3,6 +3,7 @@
 from collections import OrderedDict
 import logging
 from threading import Thread
+from techno_dominant.utils.local_timezone_convert_util import get_local_tz
 from techno_dominant.pubs_subs.mqtt_subscribe_utils import MQTTSubscriber
 from divine_nexus.const import topics_to_sub_list
 from techno_dominant.models.dominant_cli_models import DominantCliModel
@@ -49,6 +50,8 @@ class MQTTSubscriberMiddleware:
                     data["pub_topic"] = query.pub_topic
                     data["exec_response"] = query.exec_response
                     data["sub_topic"] = query.sub_topic
+                    data["execution_status"] = query.execution_status
+                    data["executed_at"] = get_local_tz(query.executed_at, request)
 
                     new_response = JsonResponse(data, status=response.status_code)
                     # Return the new response

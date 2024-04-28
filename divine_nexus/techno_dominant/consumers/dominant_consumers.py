@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 from channels.generic.websocket import AsyncWebsocketConsumer
-from techno_dominant.serializers.dominant_cli_serializers import DominantCliModelSerializer
+from techno_dominant.serializers.dominant_cli_serializers import DominantCliSerializer
 from techno_dominant.utils.local_timezone_convert_util import get_local_tz, get_tz_gmt_offset
 from techno_dominant.models import *
 from asgiref.sync import sync_to_async
@@ -95,7 +95,7 @@ class DominantConsumer(AsyncWebsocketConsumer):
         if result.exists():
             result = result.first()
             dummy_request = HttpRequest()
-            ser_data = DominantCliModelSerializer(result, context={"request": dummy_request}).data
+            ser_data = DominantCliSerializer(result, context={"request": dummy_request}).data
             print(f"ser data: {ser_data}")
             return ser_data
         else:
@@ -105,7 +105,7 @@ class DominantConsumer(AsyncWebsocketConsumer):
     def save_message(self, data):
         command = data.get("command")
         is_scheduled = True if data.get("is_scheduled") == "true" else False
-        cron_syntax = data.get("cron_syntax")
+        cron_expression = data.get("cron_expression")
         scheduled_datetime = data.get("scheduled_datetime")
 
 
@@ -124,11 +124,11 @@ class DominantConsumer(AsyncWebsocketConsumer):
             payload = {
                 "command": command,
                 "is_scheduled": is_scheduled,
-                "cron_syntax": cron_syntax if cron_syntax else None,
+                "cron_expression": cron_expression if cron_expression else None,
                 "scheduled_datetime": scheduled_datetime if scheduled_datetime else None
             }
             print(f"payload: {payload}")
-            cli = DominantCliModelSerializer(data=payload, context={"request": dummy_request})
+            cli = DominantCliSerializer(data=payload, context={"request": dummy_request})
             cli.is_valid(raise_exception=True)
             instace = cli.save()
             ser_data = cli.data

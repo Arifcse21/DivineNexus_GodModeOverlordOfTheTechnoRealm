@@ -12,7 +12,7 @@ from techno_dominant.utils.local_timezone_convert_util import get_tz_gmt_offset
 
 class DominantCliView(generics.ListCreateAPIView):
     queryset = DominantCliModel.objects.all()
-    serializer_class = DominantCliModelSerializer
+    serializer_class = DominantCliSerializer
     pagination_class = CustomPagination
 
 
@@ -30,12 +30,13 @@ class DominantCliView(generics.ListCreateAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def create(self, request, *args, **kwargs):
-        # try:
+        try:
 
             command = request.data["command"]
             is_scheduled = True if request.data.get("is_scheduled") == "true" else False
-            cron_syntax = request.data.get("cron_syntax")
+            cron_expression = request.data.get("cron_expression")
             scheduled_datetime = request.data.get("scheduled_datetime")
+            # print(f"scheduled_datetime: {scheduled_datetime}")
 
             if is_scheduled and scheduled_datetime:
                 gmt_offset = get_tz_gmt_offset(scheduled_datetime, request)
@@ -49,7 +50,7 @@ class DominantCliView(generics.ListCreateAPIView):
             instance = DominantCliModel.objects.create(
                 command=command,
                 is_scheduled=is_scheduled,
-                cron_syntax=cron_syntax if cron_syntax else None,
+                cron_expression=cron_expression if cron_expression else None,
                 scheduled_datetime=scheduled_datetime if scheduled_datetime else None
             )
 
@@ -57,14 +58,15 @@ class DominantCliView(generics.ListCreateAPIView):
             
             return Response(ser_data, status=status.HTTP_201_CREATED)
 
-        # except Exception as e:
-        #     # print(e)
-        #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # print(e)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DominantCliRetView(generics.RetrieveAPIView):
     queryset = DominantCliModel.objects.all()
-    serializer_class = DominantCliModelSerializer
+    serializer_class = DominantCliSerializer
+
 
 class ClearCliHistoryView(generics.ListCreateAPIView):
     serializer_class = ClearCliHistorySerializer
