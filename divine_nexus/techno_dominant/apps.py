@@ -1,6 +1,5 @@
 from django.apps import AppConfig
-from django.db.models.signals import post_migrate
-
+from django.db.models.signals import post_migrate, post_save
 
 
 class TechnoDominantConfig(AppConfig):
@@ -10,5 +9,5 @@ class TechnoDominantConfig(AppConfig):
     def ready(self):
         from techno_dominant.models import DominantCliModel
         from techno_dominant.signals.dominant_signals import dominant_cli_signal
-        post_migrate.connect(dominant_cli_signal, sender=DominantCliModel)
+        post_save.connect(dominant_cli_signal, sender=DominantCliModel)
     

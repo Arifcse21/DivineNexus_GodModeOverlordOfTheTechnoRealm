@@ -30,3 +30,10 @@ celery -A divine_nexus  worker -l INFO -E
 ```
 celery --broker=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@$RABBITMQ_HOST:$RABBITMQ_PORT/ flower --port=$FLOWER_PORT --basic-auth=$FLOWER_USER:$FLOWER_PASS
 ```
+
+
+### Celery Beat 
+```
+celery -A divine_nexus beat -l INFO --scheduler django_celery_beat.schedulers.DatabaseScheduler
+
+```

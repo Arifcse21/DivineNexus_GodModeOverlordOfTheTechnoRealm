@@ -1,13 +1,7 @@
-from typing import Iterable
 from django.db import models
-from django.http import HttpRequest
-from divine_nexus.const import command_tuples, topics_to_pub_dict, topics_to_sub_list
-from techno_dominant.utils.local_timezone_convert_util import get_tz_gmt_offset
-from techno_dominant.pubs_subs.mqtt_publish_utils import MQTTPublisher
+from divine_nexus.const import command_tuples, topics_to_pub_dict
 from django.utils.translation import gettext_lazy as _
-from time import sleep
-from datetime import datetime
-from django.utils import timezone
+from django_celery_beat.models import CrontabSchedule, ClockedSchedule
 
 
 class DominantCliModel(models.Model):
@@ -17,7 +11,13 @@ class DominantCliModel(models.Model):
     sub_topic = models.CharField(max_length=255, null=True, blank=True, editable=False)
     is_scheduled = models.BooleanField(default=False)
     cron_expression = models.CharField(max_length=255, null=True, blank=True)
+    crontab_schedule = models.ForeignKey(CrontabSchedule, on_delete=models.CASCADE,
+                                        related_name="dominant_cli_cron_schedule", null=True, blank=True)
+    
     scheduled_datetime = models.DateTimeField(null=True, blank=True)
+    clocked_schedule = models.ForeignKey(ClockedSchedule, on_delete=models.CASCADE,
+                                        related_name="dominant_cli_clocked_schedule", null=True, blank=True)
+    
     execution_status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     executed_at = models.DateTimeField(null=True, blank=True)
@@ -27,7 +27,7 @@ class DominantCliModel(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.id}-{self.command}-{self.executed_at}"
+        return f"{self.id}-{self.command}"
     
 
     def save(self, *args, **kwargs):
@@ -48,4 +48,3 @@ class DominantCliModel(models.Model):
         
         return super().save(*args, **kwargs)
 
-        
