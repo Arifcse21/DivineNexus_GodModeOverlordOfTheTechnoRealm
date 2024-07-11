@@ -10,8 +10,8 @@ from predefined_constants import predefined_topics
 
 
 # Define your Wi-Fi credentials
-wifi_ssid = "Rawshi"
-wifi_password = "Rawshi_sadhu1462"
+wifi_ssid = "your_ssid"
+wifi_password = "strong_wifi_pass_123"
 
 # Function to connect to Wi-Fi
 def connect_wifi():
