@@ -7,8 +7,8 @@ from publisher import MQTTPublisher
 import time
 
 # Define your Wi-Fi credentials
-wifi_ssid = "Rawshi"
-wifi_password = "Rawshi_sadhu1462"
+wifi_ssid = "your_ssid"
+wifi_password = "strong_pass_123"
 
 
 class MQTTSubscriber:
